@@ -28,5 +28,12 @@ class Basemodel(models.Model):
         if not self.updated_at:
             self.updated_at = datetime.utcnow()
 
+    def save(self, *args, **kwargs):
+        """
+        Save method
+        """
+        self.updated_at = datetime.utcnow()
+        super().save(*args, **kwargs)
+
     class Meta:
         abstract = True

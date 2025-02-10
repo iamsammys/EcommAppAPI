@@ -28,7 +28,7 @@ class Product(Basemodel):
         user_id (int): id of the user that created the product
     """
     name = models.CharField(max_length=150)
-    description = models.TextField(max_length=500)
+    description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.IntegerField()
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)

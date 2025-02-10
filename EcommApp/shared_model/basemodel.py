@@ -5,7 +5,7 @@
 """
 
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, UTC
 from django.db import models
 
 class Basemodel(models.Model):
@@ -24,16 +24,28 @@ class Basemodel(models.Model):
         if not self.id:
             self.id = uuid4()
         if not self.created_at:
-            self.created_at = datetime.utcnow()
+            self.created_at = datetime.now(UTC)
         if not self.updated_at:
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(UTC)
 
     def save(self, *args, **kwargs):
         """
         Save method
         """
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(UTC)
         super().save(*args, **kwargs)
+
+    def __eq__(self, other):
+        """
+        Equality method
+        """
+        return self.id == other.id
+    
+    def __ne__(self, other):
+        """
+        Inequality method
+        """
+        return self.id != other.id
 
     class Meta:
         abstract = True

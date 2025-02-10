@@ -2,8 +2,7 @@ from django.db import models
 from user.models import User
 from shared_model.basemodel import Basemodel
 
-
-class ProductCategory(Basemodel):
+class Category(Basemodel):
     """
     Model for categories
 
@@ -13,7 +12,15 @@ class ProductCategory(Basemodel):
         image (str): image of the category
     """
     name = models.CharField(max_length=150)
-    description = models.TextField()
+    description = models.TextField(null=True,
+                                   blank=True,
+                                   help_text="Enter the category description")
+    
+    def total_products(self):
+        """
+        Method to calculate the total number of products in the category
+        """
+        return self.products.count()
 
 class Product(Basemodel):
     """
@@ -25,46 +32,92 @@ class Product(Basemodel):
         price (float): price of the product
         quantity (int): quantity of the product
         image (str): image of the product
-        user_id (int): id of the user that created the product
+        user (int): id of the user that created the product
     """
-    name = models.CharField(max_length=150)
-    description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity = models.IntegerField()
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    category_id = models.ForeignKey('ProductCategory', on_delete=models.CASCADE)
+    name = models.CharField(max_length=150,
+                            help_text="Enter the product name"
+                            )
+    description = models.TextField(null=True,
+                                   blank=True,
+                                   help_text="Enter the product description"
+                                   )
+    price = models.DecimalField(max_digits=10,
+                                decimal_places=2,
+                                help_text="Enter the product price"
+                                )
+    quantity = models.PositiveSmallIntegerField(help_text="Enter the product quantity",
+                                                validators=[MinValueValidator(1)]
+                                                )
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name='products'
+                             )
+    category = models.ForeignKey('ProductCategory',
+                                    on_delete=models.CASCADE,
+                                    realted_name='products'
+                                    )
     
-class ProductReview(Basemodel):
+    class Meta:
+        ordering = ['created_at']
+
+    def average_rating(self):
+        """
+        Method to calculate the average rating of the product
+        """
+        return self.reviews.aggregate(AVG('rating')).get("rating", 0.0)
+    
+    def total_products(self):
+        """
+        Method to calculate the total number of products
+        """
+class Review(Basemodel):
     """
     Model for product reviews
 
     Attributes:
-        product_id (int): id of the product
-        user_id (int): id of the user that created the review
+        product (int): id of the product
+        user (int): id of the user that created the review
         rating (int): rating of the product
         review (str): review of the product
     """
-    product_id = models.ForeignKey(Product, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.IntegerField()
-    review = models.TextField()
+    product = models.ForeignKey(Product,
+                                on_delete=models.CASCADE,
+                                related_name='reviews'
+                                )
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE, 
+                             related_name='reviews'
+                             )
+    rating = models.IntegerField(choices=RATING_CHOICES,
+                                 default=1
+                                 )
+    review = models.TextField(null=True,
+                              blank=True,
+                              help_text="Enter the product review"
+                              )
 
 class Wishlist(Basemodel):
     """
     Wishlist model
 
     Attributes:
-        user_id (User): the user that owns the wishlist
+        user (User): the user that owns the wishlist
     """
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name='wishlist')
 
 class WishlistItem(Basemodel):
     """
     Model to store user wishlist
     
     Attributes:
-        user_id (int): id of the user
-        product_id (int): id of the product
+        user (int): id of the user
+        product (int): id of the product
     """
-    wishlist_id = models.ForeignKey(Wishlist, on_delete=models.CASCADE)
-    product_id = models.ForeignKey(Product, on_delete=models.CASCADE)
+    wishlist = models.ForeignKey(Wishlist,
+                                 on_delete=models.CASCADE,
+                                 related_name="items")
+    product = models.ForeignKey(Product,
+                                on_delete=models.CASCADE,
+                                related_name="items")

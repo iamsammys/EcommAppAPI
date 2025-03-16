@@ -17,16 +17,6 @@ class Basemodel(models.Model):
     def __str__(self):
         """String representation of the model"""
         return "{} - {}".format(self.__class__.__name__, self.id)
-    
-    def __init__(self, *args, **kwargs):
-        """Constructor"""
-        super().__init__(*args, **kwargs)
-        if not self.id:
-            self.id = uuid4()
-        if not self.created_at:
-            self.created_at = datetime.now(UTC)
-        if not self.updated_at:
-            self.updated_at = datetime.now(UTC)
 
     def save(self, *args, **kwargs):
         """

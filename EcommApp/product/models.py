@@ -1,21 +1,25 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 from user.models import User
 from shared_model.basemodel import Basemodel
+
+RATING_CHOICES = [
+    (1, '1 - Poor'),
+    (2, '2 - Fair'),
+    (3, '3 - Good'),
+    (4, '4 - Very Good'),
+    (5, '5 - Excellent'),
+]
 
 class Category(Basemodel):
     """
     Model for categories
-
-    Attributes:
-        name (str): name of the category
-        description (str): description of the category
-        image (str): image of the category
     """
     name = models.CharField(max_length=150)
     description = models.TextField(null=True,
                                    blank=True,
                                    help_text="Enter the category description")
-    
+
     def total_products(self):
         """
         Method to calculate the total number of products in the category
@@ -25,14 +29,6 @@ class Category(Basemodel):
 class Product(Basemodel):
     """
     Model for products
-
-    Attributes:
-        name (str): name of the product
-        description (str): description of the product
-        price (float): price of the product
-        quantity (int): quantity of the product
-        image (str): image of the product
-        user (int): id of the user that created the product
     """
     name = models.CharField(max_length=150,
                             help_text="Enter the product name"
@@ -52,11 +48,11 @@ class Product(Basemodel):
                              on_delete=models.CASCADE,
                              related_name='products'
                              )
-    category = models.ForeignKey('ProductCategory',
-                                    on_delete=models.CASCADE,
-                                    realted_name='products'
-                                    )
-    
+    category = models.ForeignKey(Category,
+                                 on_delete=models.CASCADE,
+                                 related_name='products'
+                                 )
+
     class Meta:
         ordering = ['created_at']
 
@@ -65,20 +61,10 @@ class Product(Basemodel):
         Method to calculate the average rating of the product
         """
         return self.reviews.aggregate(AVG('rating')).get("rating", 0.0)
-    
-    def total_products(self):
-        """
-        Method to calculate the total number of products
-        """
+
 class Review(Basemodel):
     """
     Model for product reviews
-
-    Attributes:
-        product (int): id of the product
-        user (int): id of the user that created the review
-        rating (int): rating of the product
-        review (str): review of the product
     """
     product = models.ForeignKey(Product,
                                 on_delete=models.CASCADE,
@@ -99,9 +85,6 @@ class Review(Basemodel):
 class Wishlist(Basemodel):
     """
     Wishlist model
-
-    Attributes:
-        user (User): the user that owns the wishlist
     """
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
@@ -109,11 +92,7 @@ class Wishlist(Basemodel):
 
 class WishlistItem(Basemodel):
     """
-    Model to store user wishlist
-    
-    Attributes:
-        user (int): id of the user
-        product (int): id of the product
+    Model to store user wishlist items
     """
     wishlist = models.ForeignKey(Wishlist,
                                  on_delete=models.CASCADE,

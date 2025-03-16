@@ -35,14 +35,11 @@ class CustommUserManager(BaseUserManager):
         if password is None:
             raise TypeError("Superusers must have a password.")
         extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_active', True)
-
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True.")
+        extra_fields.setdefault('is_superuser', True)
                 
         return self.create_user(email, password, **extra_fields)
 
-class User(AbstractBaseUser, PermissionsMixin, Basemodel):
+class CustomUser(AbstractBaseUser, PermissionsMixin, Basemodel):
     """
     Extends the default User model to include additional fields
     
@@ -78,7 +75,7 @@ class UserProfile(Basemodel):
     address = models.TextField(null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
 
-class Wishlist(models.Model, Basemodel):
+class Wishlist(models.Model):
     """Model for user wishlist
     
     Attributes:
